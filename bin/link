@@ -1,0 +1,20 @@
+#!/bin/sh
+# Symlinks every mod and layout in this repo into the Herdr home.
+set -eu
+repo=$(cd "$(dirname "$0")/.." && pwd)
+home=${HERDR_APP_HOME:-$HOME/.config/herdr-app}
+for dir in "$repo"/mods/*/; do
+  name=$(basename "$dir")
+  target="$home/mods/$name"
+  if [ -e "$target" ] && [ ! -L "$target" ]; then echo "skip $name: $target exists and is not a link" >&2; continue; fi
+  ln -sfn "$repo/mods/$name" "$target"
+  echo "linked mods/$name"
+done
+for file in "$repo"/layouts/*.json; do
+  [ -e "$file" ] || continue
+  name=$(basename "$file")
+  target="$home/layouts/$name"
+  if [ -e "$target" ] && [ ! -L "$target" ]; then echo "skip $name: $target exists and is not a link" >&2; continue; fi
+  ln -sfn "$file" "$target"
+  echo "linked layouts/$name"
+done
