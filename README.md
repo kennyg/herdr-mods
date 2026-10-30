@@ -1,17 +1,17 @@
 # herdr-mods
 
-My mods and layouts for the [Herdr app](https://herdr.dev). The repo mirrors the Herdr home folder, so `mods/<name>/` and `layouts/<name>.json` here map to the same paths under `~/.config/herdr-app`.
+My layouts and mods for the [Herdr app](https://herdr.dev). Each top-level folder is one share, laid out like the Herdr home folder, with `layouts/` and `mods/` inside it. Each share has its own `RECIPE.md` and `preview.png`.
 
-Run `bin/link` to symlink everything into the Herdr home. Herdr follows the links, but it doesn't hot-reload a running mod through them. After you edit a mod, run `herdr-app check ~/.config/herdr-app/mods/<name>`, then `bin/reload`. The reload script switches away from the shown layout and back, which restarts its mods.
-
-## What's here
-
-| Path | What it is |
+| Folder | What it is |
 |---|---|
-| `layouts/main-emoji.json` | A clone of Herdr's `main` layout that uses `spaces-emoji` for the sidebar and `tabs-emoji` for the tab bar. |
-| `mods/tabs-emoji/` | A clone of Herdr's `tabs` bar. It shows the active space's emoji before its tabs. Click it to pick another. |
-| `mods/spaces-emoji/` | A clone of Herdr's `spaces` sidebar. It draws a space's emoji in place of its letter tile. Click the tile to pick one. |
-| `mods/menu-emoji/` | A clone of Herdr's `menu`. It adds "Set emoji" to the space right-click menu in `spaces-emoji`. |
-| `mods/space-emoji/` | The emoji picker popup. It stores picks by space ID in shared `space.emoji`. |
+| [`main-emoji/`](main-emoji/RECIPE.md) | Herdr's main window with an emoji for each space, shown in the spaces sidebar, the tab bar and the agents list. |
 
-The clones don't get Herdr's updates to `main`, `spaces`, `tabs` and `menu`. To pick those up, clone the shipped versions again and reapply the changes.
+## Install
+
+Ask your agent to add a folder by its GitHub URL. It reads the recipe and every file first, then copies the layout and mods into `~/.config/herdr-app`.
+
+## Working on these
+
+Run `bin/link` to symlink every share's mods and layouts into the Herdr home. Herdr follows the links, but it doesn't hot-reload a running mod through them. After you edit a mod, run `herdr-app check ~/.config/herdr-app/mods/<name>`, then `bin/reload`. The reload script switches away from the shown layout and back, which restarts its mods.
+
+Issues are welcome. Pull requests are limited to collaborators.
