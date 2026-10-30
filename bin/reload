@@ -1,0 +1,10 @@
+#!/bin/sh
+# Restarts the mods in the shown layout by switching away from it and back.
+# Herdr doesn't hot-reload mods that run through the symlinks bin/link makes.
+set -eu
+shown=$(herdr-app status | jq -r .layout)
+other=main
+[ "$shown" = main ] && other=terminals
+herdr-app do layout.switch --name "$other" >/dev/null
+herdr-app do layout.switch --name "$shown" >/dev/null
+echo "reloaded $shown"

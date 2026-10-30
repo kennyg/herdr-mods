@@ -2,7 +2,7 @@
 
 My mods and layouts for the [Herdr app](https://herdr.dev). The repo mirrors the Herdr home folder, so `mods/<name>/` and `layouts/<name>.json` here map to the same paths under `~/.config/herdr-app`.
 
-Run `bin/link` to symlink everything into the Herdr home. Herdr follows the links and hot-reloads on save. Run `herdr-app check ~/.config/herdr-app/mods/<name>` after each change.
+Run `bin/link` to symlink everything into the Herdr home. Herdr follows the links, but it doesn't hot-reload a running mod through them. After you edit a mod, run `herdr-app check ~/.config/herdr-app/mods/<name>`, then `bin/reload`. The reload script switches away from the shown layout and back, which restarts its mods.
 
 ## What's here
 
