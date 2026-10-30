@@ -4,7 +4,7 @@ My layouts and mods for the [Herdr app](https://herdr.dev). Each top-level folde
 
 | Folder | What it is |
 |---|---|
-| [`main-emoji/`](main-emoji/RECIPE.md) | Herdr's main window with an emoji and a theme for each space. Emoji show in the spaces sidebar, the tab bar and the agents list. Themes come from Herdr and any installed Ghostty theme. |
+| [`main-emoji/`](main-emoji/RECIPE.md) | Herdr's main window with an emoji and a theme for each space. Emoji show in the spaces sidebar, the tab bar and the agents list. The theme picker lists Herdr's themes and any installed Ghostty theme, and the window switches to a space's theme while that space shows. Right-click a space and choose "Set emoji" or "Set theme". |
 
 ## Install
 
