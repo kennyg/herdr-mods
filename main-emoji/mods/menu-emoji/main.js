@@ -1,12 +1,13 @@
 // Context menus (Herdr's items). Opened as a popup with
 // props { tab: "pane" | "tab" | "space" | "global", target }.
 // ↑/↓ move, Enter runs, Esc closes. An item is [label, command, args];
-// a command "worktree" opens the worktree dialog instead, and "emoji" the
-// space-emoji picker (this copy of Herdr's menu adds "Set emoji" to spaces).
+// a command "worktree" opens the worktree dialog instead, "emoji" the space-emoji
+// picker and "theme" the space-theme picker (this copy of Herdr's menu adds
+// "Set emoji" and "Set theme" to spaces).
 
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
-import { run, props, closeOverlay, openOverlay, theme, keys, terminals, spaces, panes, exec } from "herdr";
+import { run, props, closeOverlay, openOverlay, theme, keys, terminals, spaces, panes, exec, shared } from "herdr";
 
 // Where a space is now: its first terminal's live folder, else where it was made.
 function place(s) {
@@ -58,6 +59,7 @@ function items(p, git) {
       return [
         ["Rename", "space.rename", { id: tg.id }],
         ["Set emoji", "emoji", { space: tg.id }],
+        ["Set theme", "theme", { space: tg.id }],
         ...(git ? [["New worktree", "worktree", { space: tg.id, action: "new" }], ["Open worktree", "worktree", { space: tg.id, action: "open" }]] : []),
         ...(git === "linked" ? [["Remove worktree", "worktree", { space: tg.id, action: "remove" }]] : []),
         ["Close", "space.close", { id: tg.id }],
@@ -74,8 +76,14 @@ function items(p, git) {
   }
 }
 
+// "Set emoji" shows the space's own emoji (a smiley until it has one), "Set theme" a palette.
+function menuEmoji(command, args) {
+  if (command === "emoji") return (shared("space.emoji") ?? {})[args?.space] ?? "😀";
+  if (command === "theme") return "🎨";
+  return null;
+}
+
 function menuIcon(command) {
-  if (command === "emoji") return "mods/menu-emoji/smile.svg";
   const name = command.endsWith(".close") ? "x" : command.endsWith(".rename") ? "square-pen" : command.endsWith(".new") ? "plus" : command === "worktree" ? "git-branch" : command === "app.help" ? "terminal" : command === "app.theme" ? "settings" : command === "pane.split" ? "panel-right" : command === "pane.zoom" ? "square" : "terminal";
   return `mods/workspace-chrome/${name}.svg`;
 }
@@ -110,6 +118,7 @@ export default class Menu extends View {
     closeOverlay(props()?.overlay);
     if (it[1] === "worktree") openOverlay({ mod: "worktree", kind: "dialog", ...(it[2].action === "open" ? { width: 560, height: 480 } : { width: 440, height: 260 }), props: it[2] });
     else if (it[1] === "emoji") openOverlay({ mod: "space-emoji", kind: "popup", width: 296, height: 340, props: it[2] });
+    else if (it[1] === "theme") openOverlay({ mod: "space-theme", kind: "popup", width: 340, height: 470, props: it[2] });
     else run(it[1], it[2]);
   }
 
@@ -148,7 +157,9 @@ export default class Menu extends View {
             .when(i === this.at, (el) => el.bg(t.selected))
             .hover((s) => s.bg(t.hover))
             .on_click((_e, cx) => this.choose(i, cx))
-            .child(svg(menuIcon(it[1])).size(14).flex_none().text_color(t.muted))
+            .child(menuEmoji(it[1], it[2])
+              ? h_flex().size(14).flex_none().items_center().justify_center().text_size(12).child(menuEmoji(it[1], it[2]))
+              : svg(menuIcon(it[1])).size(14).flex_none().text_color(t.muted))
             .child(div().flex_1().child(it[0]))
             .child(div().text_size(11).text_color(t.dim).child(shortcut(it[1], it[2])))),
         ),

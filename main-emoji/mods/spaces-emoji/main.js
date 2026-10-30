@@ -5,7 +5,7 @@
 
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
-import { spaces, machines, panes, run, openOverlay, exec, hc, theme, shared, setShared, watchFolder, window, layout } from "herdr";
+import { spaces, machines, panes, run, openOverlay, exec, hc, theme, settings, shared, setShared, watchFolder, window, layout } from "herdr";
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -43,6 +43,12 @@ export function glyph(status) {
 
 export function tone(t, status) {
   return t[status] ?? t.unknown;
+}
+
+// The shown layout's theme name now: a {light, dark} pair shows its current half.
+function themeNow() {
+  const s = settings();
+  return typeof s.theme === "string" ? s.theme : s.theme?.[s.dark ? "dark" : "light"];
 }
 
 export default class Spaces extends View {
@@ -354,6 +360,25 @@ export default class Spaces extends View {
       .child(div().text_color(tone(t, w.status)).child(glyph(w.status)));
   }
 
+  // A space's theme (shared "space.themes", set by the space-theme picker) shows
+  // while it does. Spaces without one get "space.themes.base": the theme from
+  // before, or whatever was picked in Herdr's own theme menu in such a space.
+  follow(sp) {
+    const active = sp.find((s) => s.active);
+    if (!active || active.id === this.followed) return;
+    const picks = shared("space.themes") ?? {};
+    const was = this.followed;
+    this.followed = active.id;
+    const now = themeNow();
+    let base = shared("space.themes.base");
+    if (now && (!base || (was !== undefined && !picks[was]))) {
+      if (base !== now) setShared("space.themes.base", now);
+      base = now;
+    }
+    const want = picks[active.id] ?? base;
+    if (want && want !== now) run("app.theme", { name: want });
+  }
+
   render() {
     const t = theme();
     const collapsed = narrow();
@@ -369,8 +394,9 @@ export default class Spaces extends View {
       changed = true;
     }
     if (changed) setShared("space.colors", kept);
-    const emoji = shared("space.emoji") ?? {};
-    if (sp.length && Object.keys(emoji).some((id) => !ids.has(id))) setShared("space.emoji", Object.fromEntries(Object.entries(emoji).filter(([id]) => ids.has(id))));
+    // Emoji and themes of closed spaces stay in shared state: spaces() can be
+    // partial while a layout loads, and pruning then wipes live spaces' picks.
+    this.follow(sp);
     return v_flex().size_full().min_h(0).bg(t.chrome).text_size(13)
       .child(h_flex().h(31).pl(16).pr(10).items_center().justify_between().text_size(11.5).text_color(t.dim)
         .when(!collapsed, el => el.child("Spaces"))
