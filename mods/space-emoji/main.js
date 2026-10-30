@@ -1,10 +1,10 @@
 // A space's emoji, picked from a grid or typed in. Opened as a popup with
-// props { space }. Kept by space id in shared "space.emoji"; the
+// props { space }; without one, the active space. Kept by space id in shared "space.emoji"; the
 // spaces-emoji sidebar draws it in place of the space's letter tile.
 
 import { View, div } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
-import { spaces, props, closeOverlay, theme, shared, setShared } from "herdr";
+import { spaces, focused, props, closeOverlay, theme, shared, setShared } from "herdr";
 
 const GROUPS = [
   ["Work", ["🚀", "🔥", "⚡", "🛠️", "🧪", "🐛", "📦", "🧩", "🔧", "🧰", "📝", "📚"]],
@@ -22,6 +22,9 @@ function set(id, emoji) {
   setShared("space.emoji", all);
 }
 
+// The space this popup is for: the one it was opened on, else the active one.
+const target = (p) => p.space ?? focused()?.space ?? spaces().find((s) => s.active)?.id;
+
 export default class SpaceEmoji extends View {
   init(_props, cx) {
     this.input = InputState.new({ placeholder: "Or type or paste one, then Enter" });
@@ -35,15 +38,17 @@ export default class SpaceEmoji extends View {
 
   pick(emoji) {
     const p = props() ?? {};
-    if (p.space) set(p.space, emoji);
+    const id = target(p);
+    if (id) set(id, emoji);
     closeOverlay(p.overlay);
   }
 
   render() {
     const t = theme();
     const p = props() ?? {};
-    const space = spaces().find((s) => s.id === p.space);
-    const current = (shared("space.emoji") ?? {})[p.space];
+    const id = target(p);
+    const space = spaces().find((s) => s.id === id);
+    const current = (shared("space.emoji") ?? {})[id];
     const cell = (e) =>
       h_flex().id(`e-${e}`).size(22).flex_none().rounded(5).items_center().justify_center().text_size(16).cursor_pointer()
         .when(e === current, (el) => el.bg(t.selected))
@@ -58,7 +63,7 @@ export default class SpaceEmoji extends View {
           .on_click(() => this.pick(null))
           .child("Remove"))))
       .child(Input.new(this.input).h(28).flex_none().px(8).rounded(6).border_1().border_color(t.input).bg(t.background).text_size(12))
-      .child(v_flex().flex_1().min_h(0).gap(6).overflow_y_scrollbar().children(
+      .child(v_flex().flex_none().gap(6).children(
         GROUPS.map(([name, list]) => v_flex().gap(2)
           .child(div().text_size(11).text_color(t.dim).child(name))
           .child(h_flex().flex_wrap().gap(1).children(list.map(cell))))));
